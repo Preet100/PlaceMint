@@ -14,12 +14,12 @@ can never drift out of sync with how the model was trained.
 
 from __future__ import annotations
 
+import functools
 import json
 from typing import Any
 
 import joblib
 import pandas as pd
-import streamlit as st
 
 from config.settings import FEATURE_CONFIG_PATH, MODEL_METRICS_PATH, MODEL_PATH
 
@@ -29,7 +29,7 @@ from config.settings import FEATURE_CONFIG_PATH, MODEL_METRICS_PATH, MODEL_PATH
 from utils.feature_engineering import PlacementFeatureEngineer  # noqa: F401
 
 
-@st.cache_resource(show_spinner=False)
+@functools.lru_cache(maxsize=1)
 def load_pipeline():
     """Load the trained scikit-learn pipeline (cached for the app's lifetime)."""
     if not MODEL_PATH.exists():
@@ -37,7 +37,7 @@ def load_pipeline():
     return joblib.load(MODEL_PATH)
 
 
-@st.cache_data(show_spinner=False)
+@functools.lru_cache(maxsize=1)
 def load_feature_config() -> dict[str, Any]:
     """Load feature lists, dropdown options, ranges, defaults, and cohort stats."""
     if not FEATURE_CONFIG_PATH.exists():
@@ -46,7 +46,7 @@ def load_feature_config() -> dict[str, Any]:
         return json.load(f)
 
 
-@st.cache_data(show_spinner=False)
+@functools.lru_cache(maxsize=1)
 def load_model_metrics() -> dict[str, Any]:
     """Load the saved comparison table / confusion matrix / ROC curve / etc."""
     if not MODEL_METRICS_PATH.exists():
@@ -68,9 +68,16 @@ def fill_defaults(user_values: dict[str, Any]) -> dict[str, Any]:
     full = {}
 
     for col in config.get("numeric_features", []):
-        full[col] = user_values.get(col, config["numeric_defaults"].get(col))
+        if col in user_values and user_values[col] is not None:
+            full[col] = float(user_values[col])
+        else:
+            full[col] = float(config["numeric_defaults"].get(col, 0.0))
+
     for col in config.get("categorical_features", []):
-        full[col] = user_values.get(col, config["categorical_defaults"].get(col))
+        if col in user_values and user_values[col] is not None:
+            full[col] = str(user_values[col])
+        else:
+            full[col] = str(config["categorical_defaults"].get(col, ""))
 
     return full
 
@@ -106,6 +113,30 @@ def predict_placement(feature_values: dict[str, Any]) -> dict[str, Any]:
 
     proba = pipeline.predict_proba(row)[0]
     not_placed_p, placed_p = float(proba[0]), float(proba[1])
+
+    # Extract user inputs (distinguish explicit 0 from filled defaults)
+    cgpa = float(feature_values.get("cgpa", full_values.get("cgpa", 0)))
+    t10 = float(feature_values.get("tenth_percentage", full_values.get("tenth_percentage", 0)))
+    t12 = float(feature_values.get("twelfth_percentage", full_values.get("twelfth_percentage", 0)))
+    proj = float(feature_values.get("projects_completed", full_values.get("projects_completed", 0)))
+    intern = float(feature_values.get("internships_completed", full_values.get("internships_completed", 0)))
+    coding = float(feature_values.get("coding_skill_rating", full_values.get("coding_skill_rating", 0)))
+
+    # Zero-Input & Out-of-Bounds Capping Guardrails:
+    # 1. Zero CGPA or zero overall academic profile -> 0% Placement Probability
+    if cgpa == 0.0 or (t10 == 0.0 and t12 == 0.0 and cgpa < 5.0):
+        placed_p = 0.0
+    elif cgpa < 5.0:
+        # Severe penalty for failing / below minimum CGPA threshold (< 5.0)
+        cgpa_factor = (cgpa / 5.0) ** 1.5
+        placed_p = placed_p * cgpa_factor
+
+    # 2. Hard zero core practical rule (0 projects, 0 internships, <= 1 coding rating AND CGPA < 6.0)
+    if proj == 0 and intern == 0 and coding <= 1 and cgpa < 6.0:
+        placed_p = min(placed_p, 0.15 * (cgpa / 6.0 if cgpa > 0 else 0.0))
+
+    placed_p = max(0.0, min(1.0, round(placed_p, 4)))
+    not_placed_p = round(1.0 - placed_p, 4)
     prediction = "Placed" if placed_p >= 0.5 else "Not Placed"
 
     return {

@@ -86,10 +86,13 @@ def extract_text_from_pdf(file_obj: Any) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 _SECTION_KEYWORDS = {
-    "education": ["education", "academic background", "academics", "qualification"],
-    "experience": ["experience", "internship", "work experience", "internships"],
-    "projects": ["projects", "academic projects", "personal projects"],
-    "skills": ["skills", "technical skills", "programming skills", "core competencies"],
+    "education": ["education", "academic background", "academics", "qualification", "educational qualification"],
+    "experience": [
+        "experience", "internship", "work experience", "internships", "training / work experience",
+        "work experience / training", "employment history", "professional experience", "training & experience"
+    ],
+    "projects": ["projects", "academic projects", "personal projects", "key projects"],
+    "skills": ["skills", "technical skills", "programming skills", "core competencies", "technical & soft skills"],
     "soft_skills": ["soft skills", "interpersonal skills"],
     "certifications": ["certifications", "certificates", "licenses & certifications"],
     "cocurricular": ["co-curricular", "extracurricular", "extra-curricular", "achievements", "activities"],
@@ -106,9 +109,13 @@ _KNOWN_TECH_SKILLS = [
 ]
 
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
-_PHONE_RE = re.compile(r"(?:\+91[\s-]?)?[6-9]\d{9}\b")
+_PHONE_RE = re.compile(
+    r"(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}\b|(?:\+91[\s-]?)?[6-9]\d{2}[\s-]?\d{4}[\s-]?\d{4}\b|(?:\+91[\s-]?)?[6-9]\d{9}\b"
+)
 _CGPA_RE = re.compile(r"(?:cgpa|gpa)[\s:]*([0-9]\.[0-9]{1,2}|[0-9]{1,2})\b", re.IGNORECASE)
 _PERCENT_RE = re.compile(r"([0-9]{2,3}(?:\.[0-9]{1,2})?)\s*%")
+_GITHUB_RE = re.compile(r"https?://(?:www\.)?github\.com/[\w-]+/?", re.IGNORECASE)
+_LINKEDIN_RE = re.compile(r"https?://(?:www\.)?linkedin\.com/in/[\w-]+/?", re.IGNORECASE)
 
 
 def _split_into_sections(text: str) -> dict[str, str]:
@@ -125,10 +132,24 @@ def _split_into_sections(text: str) -> dict[str, str]:
         stripped = line.strip(" \t:•-")
         lower = stripped.lower()
         matched_key = None
-        if 0 < len(stripped) <= 40:
+        if 0 < len(stripped) <= 45:
             for key, keywords in _SECTION_KEYWORDS.items():
-                if any(lower == kw or lower.startswith(kw) for kw in keywords):
-                    matched_key = key
+                for kw in keywords:
+                    if (
+                        lower == kw
+                        or lower == f"{kw}s"
+                        or lower == f"{kw}:"
+                        or lower == f"{kw} :"
+                        or lower.startswith(f"{kw}:")
+                        or lower.startswith(f"{kw} :")
+                        or lower.startswith(f"{kw} -")
+                        or lower.startswith(f"{kw} –")
+                        or lower.startswith(f"{kw} —")
+                        or lower.startswith(f"{kw} /")
+                    ):
+                        matched_key = key
+                        break
+                if matched_key:
                     break
         if matched_key:
             current = matched_key
@@ -151,10 +172,60 @@ def _extract_bullet_items(section_text: str) -> list[str]:
     return lines
 
 
+_TECH_DISPLAY_NAMES = {
+    "python": "Python",
+    "java": "Java",
+    "c++": "C++",
+    "c": "C",
+    "javascript": "JavaScript",
+    "typescript": "TypeScript",
+    "sql": "SQL",
+    "html": "HTML",
+    "css": "CSS",
+    "react": "React",
+    "node.js": "Node.js",
+    "node": "Node.js",
+    "django": "Django",
+    "flask": "Flask",
+    "spring": "Spring",
+    "angular": "Angular",
+    "vue": "Vue",
+    "machine learning": "Machine Learning",
+    "deep learning": "Deep Learning",
+    "tensorflow": "TensorFlow",
+    "pytorch": "PyTorch",
+    "pandas": "Pandas",
+    "numpy": "NumPy",
+    "aws": "AWS",
+    "azure": "Azure",
+    "gcp": "GCP",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "git": "Git",
+    "github": "GitHub",
+    "linux": "Linux",
+    "mongodb": "MongoDB",
+    "mysql": "MySQL",
+    "postgresql": "PostgreSQL",
+    "excel": "Excel",
+    "power bi": "Power BI",
+    "tableau": "Tableau",
+    "r": "R",
+    "matlab": "MATLAB",
+    "autocad": "AutoCAD",
+    "solidworks": "SolidWorks",
+    "figma": "Figma",
+    "photoshop": "Photoshop",
+    "android": "Android",
+    "kotlin": "Kotlin",
+    "swift": "Swift",
+}
+
+
 def _guess_full_name(header_block: str) -> str:
     for line in header_block.splitlines():
         candidate = line.strip()
-        if not candidate or _EMAIL_RE.search(candidate) or _PHONE_RE.search(candidate):
+        if not candidate or _EMAIL_RE.search(candidate) or _PHONE_RE.search(candidate) or "github" in candidate.lower() or "linkedin" in candidate.lower():
             continue
         words = candidate.split()
         if 1 <= len(words) <= 4 and all(w.replace(".", "").isalpha() for w in words):
@@ -180,37 +251,134 @@ def parse_resume_text_heuristic(raw_text: str) -> dict[str, Any]:
     phone_match = _PHONE_RE.search(raw_text)
     if phone_match:
         data["phone"] = phone_match.group(0)
+    github_match = _GITHUB_RE.search(raw_text)
+    if github_match:
+        data["github"] = github_match.group(0)
+    linkedin_match = _LINKEDIN_RE.search(raw_text)
+    if linkedin_match:
+        data["linkedin"] = linkedin_match.group(0)
 
     if sections.get("summary"):
         data["summary"] = sections["summary"][:600]
 
     # ---- Skills ----
-    text_lower = raw_text.lower()
-    found_tech = [s for s in _KNOWN_TECH_SKILLS if s in text_lower]
-    # De-duplicate near-variants (e.g. "node" vs "node.js") by keeping the longer form.
-    found_tech = sorted(set(found_tech), key=len, reverse=True)
-    deduped: list[str] = []
-    for skill in found_tech:
-        if not any(skill != other and skill in other for other in deduped):
-            deduped.append(skill)
-    data["skills_technical"] = [s.title() if s.islower() else s for s in deduped][:20]
+    found_tech: list[str] = []
+    for skill in _KNOWN_TECH_SKILLS:
+        s_lower = skill.lower()
+        if s_lower == "c":
+            if re.search(r"\bC\b", raw_text) or re.search(r"\b[cC]\s*(?:programming|language)\b", raw_text, re.IGNORECASE):
+                if "C" not in found_tech:
+                    found_tech.append("C")
+        elif s_lower == "r":
+            if re.search(r"\bR\b", raw_text) or re.search(r"\b[rR]\s*(?:programming|language|package|studio)\b", raw_text, re.IGNORECASE):
+                if "R" not in found_tech:
+                    found_tech.append("R")
+        elif s_lower == "c++":
+            if re.search(r"\bc\+\+\b", raw_text, re.IGNORECASE):
+                if "C++" not in found_tech:
+                    found_tech.append("C++")
+        elif s_lower in ("node.js", "node"):
+            if re.search(r"\bnode(?:\.js)?\b", raw_text, re.IGNORECASE):
+                if "Node.js" not in found_tech:
+                    found_tech.append("Node.js")
+        elif s_lower == "react":
+            if re.search(r"\breact(?:\.js|js)?\b", raw_text, re.IGNORECASE):
+                if "React" not in found_tech:
+                    found_tech.append("React")
+        else:
+            pattern = rf"\b{re.escape(s_lower)}\b"
+            if re.search(pattern, raw_text, re.IGNORECASE):
+                formatted = _TECH_DISPLAY_NAMES.get(s_lower, skill.title() if skill.islower() else skill)
+                if formatted not in found_tech:
+                    found_tech.append(formatted)
+
+    data["skills_technical"] = found_tech[:20]
 
     if sections.get("soft_skills"):
         data["skills_soft"] = _extract_bullet_items(sections["soft_skills"])[:10]
 
-    # ---- Projects ----
+    # ---- Projects (Group bullet points under parent project heading) ----
     if sections.get("projects"):
-        items = _extract_bullet_items(sections["projects"])
-        # Group consecutive short "title-like" lines as separate project entries.
-        data["projects"] = [{"title": item[:120], "tech_stack": "", "github_link": "",
-                              "live_link": "", "description": item} for item in items[:15]]
+        proj_text = sections["projects"]
+        date_pattern = re.compile(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{4}\b", re.I)
+        projects_list = []
+        curr_proj = None
 
-    # ---- Experience / Internships ----
+        for line in proj_text.splitlines():
+            line_str = line.strip()
+            if not line_str:
+                continue
+            is_bullet = line_str.startswith(("●", "•", "▪", "‣", "-"))
+            is_header = "|" in line_str or date_pattern.search(line_str)
+
+            if is_bullet:
+                bullet_text = line_str.lstrip("●•▪‣- ").strip()
+                if curr_proj:
+                    curr_proj["bullets"].append(bullet_text)
+                    curr_proj["description"] = (curr_proj["description"] + " " + bullet_text).strip()
+            elif is_header or not curr_proj:
+                if curr_proj:
+                    projects_list.append(curr_proj)
+                parts = [p.strip() for p in line_str.split("|")]
+                title = parts[0]
+                tech = parts[1] if len(parts) > 1 else ""
+                curr_proj = {"title": title[:120], "tech_stack": tech[:100], "github_link": "", "live_link": "", "bullets": [], "description": line_str}
+            else:
+                if curr_proj.get("bullets"):
+                    curr_proj["bullets"][-1] += " " + line_str
+                    curr_proj["description"] += " " + line_str
+                else:
+                    curr_proj["title"] += " " + line_str
+
+        if curr_proj:
+            projects_list.append(curr_proj)
+
+        # Cleanup bullets key before storing
+        for p in projects_list:
+            p.pop("bullets", None)
+        data["projects"] = projects_list[:15]
+
+    # ---- Experience / Internships (Group bullet points under company/role) ----
     if sections.get("experience"):
-        items = _extract_bullet_items(sections["experience"])
-        data["experience"] = [{"company": "", "role": item[:120], "location": "",
-                                "start_date": "", "end_date": "", "description": item}
-                               for item in items[:10]]
+        exp_text = sections["experience"]
+        date_pattern = re.compile(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{4}\b|\bPresent\b", re.I)
+        exp_list = []
+        curr_exp = None
+
+        for line in exp_text.splitlines():
+            line_str = line.strip()
+            if not line_str:
+                continue
+            is_bullet = line_str.startswith(("●", "•", "▪", "‣", "-"))
+            has_date = date_pattern.search(line_str)
+
+            if is_bullet:
+                bullet_text = line_str.lstrip("●•▪‣- ").strip()
+                if curr_exp:
+                    curr_exp["bullets"].append(bullet_text)
+                    curr_exp["description"] = (curr_exp["description"] + " " + bullet_text).strip()
+            elif has_date:
+                if curr_exp:
+                    exp_list.append(curr_exp)
+                curr_exp = {"company": line_str[:120], "role": "", "location": "", "start_date": "", "end_date": "", "bullets": [], "description": ""}
+            else:
+                if curr_exp:
+                    if not curr_exp["role"]:
+                        curr_exp["role"] = line_str[:100]
+                    elif curr_exp.get("bullets"):
+                        curr_exp["bullets"][-1] += " " + line_str
+                        curr_exp["description"] += " " + line_str
+                    else:
+                        curr_exp["company"] += " " + line_str
+                else:
+                    curr_exp = {"company": line_str[:120], "role": "", "location": "", "start_date": "", "end_date": "", "bullets": [], "description": ""}
+
+        if curr_exp:
+            exp_list.append(curr_exp)
+
+        for e in exp_list:
+            e.pop("bullets", None)
+        data["experience"] = exp_list[:10]
 
     # ---- Certifications ----
     if sections.get("certifications"):
@@ -222,42 +390,60 @@ def parse_resume_text_heuristic(raw_text: str) -> dict[str, Any]:
     if sections.get("cocurricular"):
         data["cocurricular"] = _extract_bullet_items(sections["cocurricular"])[:15]
 
-    # ---- Education (best effort: look for a level keyword, then read the
-    #      CGPA/percentage from THAT SAME LINE first, falling back to the
-    #      next line only if the current line has no number -- searching a
-    #      wide character window here would risk picking up a neighbouring
-    #      education entry's score instead of this one's). ----
+    # ---- Education (Extract institution names, degrees, streams, years, and scores) ----
     edu_text = sections.get("education", "") or raw_text
-    edu_lines = [ln for ln in edu_text.splitlines() if ln.strip()]
+    edu_lines = [ln.strip() for ln in edu_text.splitlines() if ln.strip()]
     education_entries = []
     level_patterns = [
-        ("10th", [r"\b10th\b", r"\bssc\b", r"class\s*x\b"]),
-        ("12th", [r"\b12th\b", r"\bhsc\b", r"class\s*xii\b", r"\bdiploma\b"]),
-        ("UG", [r"b\.?\s*tech", r"b\.?\s*e\b", r"bachelor"]),
+        ("UG", [r"b\.?\s*tech", r"b\.?\s*e\b", r"bachelor", r"undergraduate", r"b\.?\s*s\.?\b", r"b\.?\s*c\.?\s*a\b"]),
+        ("12th", [r"\b12th\b", r"\bhsc\b", r"class\s*xii\b", r"\bdiploma\b", r"higher secondary", r"senior secondary", r"intermediate"]),
+        ("10th", [r"\b10th\b", r"\bssc\b", r"class\s*x\b", r"high school", r"secondary education", r"matriculation"]),
     ]
     matched_levels = set()
+    year_pattern = re.compile(r"\b(19\d\d|20\d\d)(?:\s*[–\-—]\s*(?:19\d\d|20\d\d|Present))?\b", re.IGNORECASE)
+
     for i, line in enumerate(edu_lines):
         for level, patterns in level_patterns:
             if level in matched_levels:
                 continue
             if any(re.search(pattern, line, re.IGNORECASE) for pattern in patterns):
-                same_line_cgpa = _CGPA_RE.search(line)
-                same_line_pct = _PERCENT_RE.search(line)
-                next_line = edu_lines[i + 1] if i + 1 < len(edu_lines) else ""
-                next_line_cgpa = _CGPA_RE.search(next_line) if not (same_line_cgpa or same_line_pct) else None
-                next_line_pct = _PERCENT_RE.search(next_line) if not (same_line_cgpa or same_line_pct) else None
+                # Capture institution / school name from preceding line if present
+                inst_name = ""
+                if i > 0:
+                    prev_line = edu_lines[i - 1]
+                    if not any(re.search(p, prev_line, re.IGNORECASE) for _, pats in level_patterns for p in pats):
+                        inst_name = prev_line
 
-                score_match = same_line_cgpa or same_line_pct or next_line_cgpa or next_line_pct
+                context = " ".join(edu_lines[max(0, i - 1):min(len(edu_lines), i + 3)])
+                same_line_cgpa = _CGPA_RE.search(context)
+                same_line_pct = _PERCENT_RE.search(context)
+                year_match = year_pattern.search(context)
+
+                # Detect stream/branch from context
+                stream_val = ""
+                combined_edu = context.lower()
+                if re.search(r"\b(computer science|cse|software)\b", combined_edu):
+                    stream_val = "Computer Science and Engineering"
+                elif re.search(r"\b(information technology)\b", combined_edu) or " it " in f" {combined_edu} ":
+                    stream_val = "Information Technology"
+                elif re.search(r"\b(electronics|ece|electrical)\b", combined_edu):
+                    stream_val = "Electronics and Communication"
+                elif re.search(r"\b(mechanical)\b", combined_edu):
+                    stream_val = "Mechanical Engineering"
+                elif re.search(r"\b(civil)\b", combined_edu):
+                    stream_val = "Civil Engineering"
+
                 education_entries.append({
                     "level": level,
-                    "institution": "",
+                    "institution": inst_name[:120],
                     "board_university": "",
-                    "year_of_passing": "",
-                    "percentage_cgpa": score_match.group(1) if score_match else "",
-                    "stream": "",
+                    "year_of_passing": year_match.group(0) if year_match else "",
+                    "percentage_cgpa": (same_line_cgpa or same_line_pct).group(1) if (same_line_cgpa or same_line_pct) else "",
+                    "stream": stream_val if stream_val else line[:80],
                 })
                 matched_levels.add(level)
                 break
+
     data["education"] = education_entries
 
     return data
@@ -323,8 +509,14 @@ def map_resume_to_features(resume_data: dict[str, Any]) -> dict[str, Any]:
         features["extracurricular_involvement"] = "High"
 
     n_tech = len(resume_data.get("skills_technical", []))
-    if n_tech:
-        features["coding_skill_rating"] = max(1, min(5, 1 + n_tech // 3))
+    if n_tech >= 10:
+        features["coding_skill_rating"] = 5.0
+    elif n_tech >= 6:
+        features["coding_skill_rating"] = 4.0
+    elif n_tech >= 3:
+        features["coding_skill_rating"] = 3.0
+    elif n_tech >= 1:
+        features["coding_skill_rating"] = 2.0
 
     n_soft = len(resume_data.get("skills_soft", []))
     all_text = " ".join(resume_data.get("skills_soft", [])).lower()
@@ -360,5 +552,24 @@ def map_resume_to_features(resume_data: dict[str, Any]) -> dict[str, Any]:
             features["branch"] = "CE"
         if "branch" in features:
             break
+
+    # Fallback to checking overall resume text if branch still undetermined
+    if "branch" not in features:
+        combined_text = " ".join([
+            resume_data.get("full_name", ""),
+            resume_data.get("summary", ""),
+            " ".join(e.get("stream", "") + " " + e.get("institution", "") + " " + e.get("board_university", "") for e in resume_data.get("education", [])),
+            " ".join(p.get("title", "") + " " + p.get("description", "") for p in resume_data.get("projects", []))
+        ]).lower()
+        if re.search(r"\b(computer science|cse|software engineering)\b", combined_text):
+            features["branch"] = "CSE"
+        elif re.search(r"\b(information technology)\b", combined_text) or " it " in f" {combined_text} ":
+            features["branch"] = "IT"
+        elif re.search(r"\b(electronics|ece|electrical)\b", combined_text):
+            features["branch"] = "ECE"
+        elif re.search(r"\b(mechanical engineering|mechanical)\b", combined_text):
+            features["branch"] = "ME"
+        elif re.search(r"\b(civil engineering|civil)\b", combined_text):
+            features["branch"] = "CE"
 
     return {k: v for k, v in features.items() if v is not None}

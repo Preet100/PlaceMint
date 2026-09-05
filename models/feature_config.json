@@ -36,15 +36,15 @@
   },
   "numeric_ranges": {
     "cgpa": [
-      5.0,
+      0.0,
       10.0
     ],
     "tenth_percentage": [
-      50.0,
+      0.0,
       100.0
     ],
     "twelfth_percentage": [
-      50.0,
+      0.0,
       100.0
     ],
     "backlogs": [
@@ -56,8 +56,8 @@
       10.0
     ],
     "attendance_percentage": [
-      44.7,
-      99.2
+      0.1,
+      100.0
     ],
     "projects_completed": [
       0.0,
@@ -65,31 +65,31 @@
     ],
     "internships_completed": [
       0.0,
-      4.0
+      5.0
     ],
     "coding_skill_rating": [
-      1.0,
+      0.0,
       5.0
     ],
     "communication_skill_rating": [
-      1.0,
+      0.0,
       5.0
     ],
     "aptitude_skill_rating": [
-      1.0,
+      0.0,
       5.0
     ],
     "hackathons_participated": [
       0.0,
-      6.0
+      7.0
     ],
     "certifications_count": [
       0.0,
-      9.0
+      7.0
     ],
     "sleep_hours": [
       4.0,
-      9.0
+      10.0
     ],
     "stress_level": [
       1.0,
@@ -97,19 +97,19 @@
     ]
   },
   "numeric_defaults": {
-    "cgpa": 8.32,
-    "tenth_percentage": 74.7,
-    "twelfth_percentage": 74.8,
+    "cgpa": 4.96,
+    "tenth_percentage": 57.5,
+    "twelfth_percentage": 57.95,
     "backlogs": 0.0,
-    "study_hours_per_day": 4.0,
-    "attendance_percentage": 72.05,
-    "projects_completed": 6.0,
+    "study_hours_per_day": 5.0,
+    "attendance_percentage": 65.05,
+    "projects_completed": 3.0,
     "internships_completed": 2.0,
-    "coding_skill_rating": 4.0,
+    "coding_skill_rating": 3.0,
     "communication_skill_rating": 3.0,
-    "aptitude_skill_rating": 4.0,
-    "hackathons_participated": 4.0,
-    "certifications_count": 3.0,
+    "aptitude_skill_rating": 3.0,
+    "hackathons_participated": 2.0,
+    "certifications_count": 1.0,
     "sleep_hours": 7.0,
     "stress_level": 6.0
   },
@@ -122,6 +122,7 @@
       "CE",
       "CSE",
       "ECE",
+      "EE",
       "IT",
       "ME"
     ],
@@ -146,8 +147,7 @@
     "extracurricular_involvement": [
       "High",
       "Low",
-      "Medium",
-      "Unknown"
+      "Medium"
     ]
   },
   "categorical_defaults": {
@@ -158,197 +158,5 @@
     "city_tier": "Tier 2",
     "internet_access": "Yes",
     "extracurricular_involvement": "Medium"
-  },
-  "placed_cohort_stats": {
-    "cgpa": {
-      "mean": 8.412,
-      "median": 8.45,
-      "p25": 7.76,
-      "p75": 9.13
-    },
-    "tenth_percentage": {
-      "mean": 75.652,
-      "median": 76.0,
-      "p25": 68.8,
-      "p75": 83.0
-    },
-    "twelfth_percentage": {
-      "mean": 75.65,
-      "median": 75.9,
-      "p25": 68.9,
-      "p75": 82.6
-    },
-    "backlogs": {
-      "mean": 0.241,
-      "median": 0.0,
-      "p25": 0.0,
-      "p75": 0.0
-    },
-    "study_hours_per_day": {
-      "mean": 4.093,
-      "median": 4.1,
-      "p25": 2.7,
-      "p75": 5.4
-    },
-    "attendance_percentage": {
-      "mean": 72.173,
-      "median": 72.2,
-      "p25": 66.8,
-      "p75": 77.4
-    },
-    "projects_completed": {
-      "mean": 5.796,
-      "median": 6.0,
-      "p25": 4.0,
-      "p75": 7.0
-    },
-    "internships_completed": {
-      "mean": 2.25,
-      "median": 2.0,
-      "p25": 1.0,
-      "p75": 3.0
-    },
-    "coding_skill_rating": {
-      "mean": 3.905,
-      "median": 4.0,
-      "p25": 3.0,
-      "p75": 5.0
-    },
-    "communication_skill_rating": {
-      "mean": 3.068,
-      "median": 3.0,
-      "p25": 2.0,
-      "p75": 4.0
-    },
-    "aptitude_skill_rating": {
-      "mean": 4.178,
-      "median": 4.0,
-      "p25": 4.0,
-      "p75": 5.0
-    },
-    "hackathons_participated": {
-      "mean": 3.882,
-      "median": 4.0,
-      "p25": 3.0,
-      "p75": 5.0
-    },
-    "certifications_count": {
-      "mean": 2.926,
-      "median": 3.0,
-      "p25": 2.0,
-      "p75": 4.0
-    },
-    "sleep_hours": {
-      "mean": 6.963,
-      "median": 7.0,
-      "p25": 6.2,
-      "p75": 7.8
-    },
-    "stress_level": {
-      "mean": 5.968,
-      "median": 6.0,
-      "p25": 4.0,
-      "p75": 8.0
-    }
-  },
-  "not_placed_cohort_stats": {
-    "cgpa": {
-      "mean": 7.493,
-      "median": 7.51,
-      "p25": 6.89,
-      "p75": 8.14
-    },
-    "tenth_percentage": {
-      "mean": 67.659,
-      "median": 67.7,
-      "p25": 61.6,
-      "p75": 73.7
-    },
-    "twelfth_percentage": {
-      "mean": 67.71,
-      "median": 67.7,
-      "p25": 61.2,
-      "p75": 74.0
-    },
-    "backlogs": {
-      "mean": 0.976,
-      "median": 1.0,
-      "p25": 0.0,
-      "p75": 1.0
-    },
-    "study_hours_per_day": {
-      "mean": 3.723,
-      "median": 3.7,
-      "p25": 2.4,
-      "p75": 4.9
-    },
-    "attendance_percentage": {
-      "mean": 71.228,
-      "median": 71.1,
-      "p25": 65.8,
-      "p75": 76.2
-    },
-    "projects_completed": {
-      "mean": 3.882,
-      "median": 4.0,
-      "p25": 2.0,
-      "p75": 5.0
-    },
-    "internships_completed": {
-      "mean": 1.41,
-      "median": 1.0,
-      "p25": 1.0,
-      "p75": 2.0
-    },
-    "coding_skill_rating": {
-      "mean": 2.638,
-      "median": 2.0,
-      "p25": 2.0,
-      "p75": 4.0
-    },
-    "communication_skill_rating": {
-      "mean": 2.763,
-      "median": 3.0,
-      "p25": 2.0,
-      "p75": 4.0
-    },
-    "aptitude_skill_rating": {
-      "mean": 3.736,
-      "median": 4.0,
-      "p25": 3.0,
-      "p75": 4.0
-    },
-    "hackathons_participated": {
-      "mean": 2.605,
-      "median": 2.0,
-      "p25": 1.0,
-      "p75": 4.0
-    },
-    "certifications_count": {
-      "mean": 2.28,
-      "median": 2.0,
-      "p25": 1.0,
-      "p75": 3.0
-    },
-    "sleep_hours": {
-      "mean": 6.908,
-      "median": 6.9,
-      "p25": 6.1,
-      "p75": 7.7
-    },
-    "stress_level": {
-      "mean": 6.343,
-      "median": 6.0,
-      "p25": 4.0,
-      "p75": 9.0
-    }
-  },
-  "dataset_shape": [
-    5000,
-    25
-  ],
-  "class_balance": {
-    "placed_pct": 86.1,
-    "not_placed_pct": 13.9
   }
 }

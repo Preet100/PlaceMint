@@ -1,0 +1,63 @@
+Omkar Dubey
+AI/ML Full Stack Developer
+Email: omkardubey165@gmail.com Github: https://github.com/OMKAR580/
+LinkedIn: http://www.linkedin.com/in/ashu2808/ Mobile: +91 9305240893
+SKILLS
+Frontend: React.js, Next.js (App Router), JavaScript, HTML5, CSS3, Tailwind CSS, Framer
+Motion, GSAP
+Backend: Node.js, Express.js, Python (Flask, FastAPI), Java (Spring Boot – Basic)
+Databases: PostgreSQL, MongoDB, MySQL, SQLite, Supabase, MS SQL Server
+AI/ML & LLM Integration: OpenAI, Gemini API, Groq, OpenRouter, Scikit-learn, multi-provider AI
+orchestration & fallback design
+Auth & Security: Clerk, Firebase Auth, JWT, OAuth 2.0, Argon2, iron-session, Row Level Security
+(RLS)
+Payments & APIs: Razorpay, REST APIs, Webhooks, Prisma ORM, SQLAlchemy
+Cloud & DevOps: Vercel, Render, Docker, GitHub Actions, AWS/GCP/Azure (Free Tier), Git/GitHub
+Soft Skills: Problem-Solving, Team Leadership, Stakeholder Communication, Adaptability
+PROJECTS
+SalarySense AI — ML-Powered Compensation Analytics | Next.js, FastAPI, Scikit-learn, PostgreSQL Mar 2026
+● Built an ML-powered compensation analytics platform predicting fair market salaries with 90%+ confidence using
+Ridge Regression across job title, experience, education, and location.
+● Implemented Explainable AI (XAI) to surface positive/negative salary drivers, with CSV bulk-upload supporting
+analysis of 1,000+ candidates in a single batch.
+● Delivered multi-currency support (₹/$/€/£) and branded PDF report exports; deployed frontend on Vercel and
+backend on Render with Redis caching.
+SmartCurr — AI-Based Curriculum System | Python, Flask, PostgreSQL, Multi-AI May 2026
+● Developed a curriculum gap-analysis platform combining a deterministic backend baseline with a Gemini → Groq
+→ OpenRouter AI enrichment pipeline for zero single-point-of-failure analysis.
+● Migrated authentication from Flask-Login to Clerk (JWT + OAuth) with a zero-regression compatibility layer; built
+an authenticated AI chatbot support assistant with admin issue-escalation workflow.
+● Built a deterministic course-recommendation engine (save/pin/dismiss/feedback) driven entirely by saved skill-gap
+data and a verified static course catalog — no scraping or AI-generated links.
+Nalanda & Krishana Foundation | Next.js, TypeScript, Supabase, Clerk, Razorpay Jun 2026
+● Built a multi-tenant, enterprise-grade LMS and registration platform serving two independent brands from a single
+Next.js codebase, with environment-driven dynamic branding.
+● Implemented Clerk-based authentication with a resilient cookie-fallback mechanism to prevent split-brain states in
+edge middleware; secured data access with Supabase Row Level Security.
+● Integrated Razorpay for real-time course-fee collection and built a personalized student dashboard with live-class
+access and payment history.
+TRAINING / WORK EXPERIENCE
+Kaizel Industries Pvt. Ltd. (DriftX Division) May 2026 – Present
+Technical Head
+● Serving as Technical Head for DriftX, owning end-to-end technical architecture, product engineering, and delivery
+for a live full-stack consumer platform (Next.js, TypeScript, PostgreSQL, Prisma, Razorpay).
+● Directly report to the Founder & CEO; responsible for technology decisions, security posture, and reliability across
+frontend, backend, database, and payment layers.
+● Drive engineering priorities and coordinate feature delivery, including secure payment flows and a
+cryptographically signed digital ticketing system.
+Eduniketan Pvt. Ltd. (TheEduCode) Sep 2026 – Apr 2027
+Software Architecture & Product Engineering Trainee (OJT)
+● Working with the Technical Operations team of TheEduCode, an enterprise programming-education platform,
+supporting platform operations, technical support, and system monitoring.
+● Assisting with workflow management, technical documentation, project coordination, and process-improvement
+initiatives to improve platform scalability and reliability.
+CERTIFICATES
+AI & ML Basics to Advanced (Career Ready Programme) | TheEduBootCamp Jul 2026
+Database Management System Part - 1 | Infosys Springboard Aug 2026
+EDUCATION
+Lovely Professional University Phagwara, Punjab
+Bachelor of Technology Aug 2024 – Present
+Computer Science and Engineering; 3rd Year; CGPA: 8.01
+B.B.S Smriti Vidyapeeth Auraiya, Uttar Pradesh, India
+Class 10th (CBSE) 2020 – 2021
+Percentage: 85.5%
