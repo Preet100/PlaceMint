@@ -1,5 +1,8 @@
-# Core application
-streamlit>=1.38.0
+# FastAPI Web Backend
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
 
 # Data & Machine Learning
 pandas>=2.1.0
@@ -7,41 +10,15 @@ numpy>=1.26.0
 scikit-learn>=1.4.0
 joblib>=1.3.0
 
-# Visualization
+# Visualization & Evaluation
 matplotlib>=3.8.0
 seaborn>=0.13.0
-plotly>=5.20.0
 
-# Notebook execution (only needed to re-run / re-execute the training notebook)
-nbformat>=5.10.0
-nbclient>=0.10.0
-ipykernel>=6.29.0
-
-# Resume parsing
+# Resume parsing & NLP
 pdfplumber>=0.11.0
 PyPDF2>=3.0.0
-
-# Resume rendering (HTML export always works with just Jinja2)
 Jinja2>=3.1.0
 
-# Config / environment
+# Config & Environment
 python-dotenv>=1.0.0
-
-# Optional: AI-powered resume extraction + coaching advice.
-# Get a free key at https://console.groq.com and add it to .env as GROQ_API_KEY.
-# The app works fully without this -- it just falls back to rule-based extraction.
 groq>=0.11.0
-
-# ---------------------------------------------------------------------------
-# OPTIONAL: one-click PDF export for the "Build a Resume" flow.
-# Not installed by default because WeasyPrint needs system libraries
-# (Pango/Cairo/GDK-PixBuf) that aren't guaranteed to be present, especially
-# on Windows. Without it, resume export still works as a styled HTML file
-# (open it and press Ctrl+P to save as PDF from any browser).
-#
-# To enable one-click PDF download, uncomment ONE of the two lines below
-# after installing the matching system libraries (see README.md):
-#
-# weasyprint>=62.0
-# pdfkit>=1.0.0   (also requires the wkhtmltopdf binary on your PATH)
-# ---------------------------------------------------------------------------
